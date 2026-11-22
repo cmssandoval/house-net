@@ -1,75 +1,231 @@
-# House Net (Frontend)
+# House Net
 
-- House Net is a web application for managing household tasks and information.
-- This frontend is designed to run in a web browser and communicate with the [**House Net backend API**](https://github.com/cmssandoval/house-net-backend).
-- The backend can also serve the built version of this frontend from its `dist/` folder. If you deploy the applications separately, configure the frontend API URL and the backend to allow requests from the frontend origin.
+House Net es una aplicación web para administrar información y recursos del hogar. El proyecto contiene el frontend en React y el backend/API en Express dentro de un único repositorio.
 
-## Features
-- Inventory management, including product search, category filters, and adding products.
-- User registration, login, and session handling.
-- Role-based access for guests, users, and administrators.
-- Administrative views for managing inventory categories, locations, and users.
-- Public resources and tools.
-- Dashboard, tasks, and calendar pages; tasks and calendar functionality is still in development.
-- Light and dark themes.
+## Funcionalidades
 
-## To Do (Planned features)
-- Complete the shared household tasks functionality.
-- Add the shared calendar and important household dates.
-- Add articles for storing academic or research information.
-- Add posts for sharing internal family information.
-- Add private digital tools to avoid exposing data through third-party sites.
+- Registro, inicio de sesión y manejo de sesiones.
+- Acceso basado en roles para invitados, usuarios y administradores.
+- Inventario con búsqueda, filtros por categoría y operaciones CRUD.
+- Administración de categorías, ubicaciones y usuarios.
+- Recursos públicos y herramientas privadas.
+- Vista de tareas y calendario; estas funcionalidades siguen en desarrollo.
+- Tema claro y oscuro.
 
-## Technologies used
-- React + TypeScript for the user interface.
-- Vite for development and production builds.
-- react-router-dom for application routes.
-- Axios for API requests.
-- Zod for validation.
-- Bootstrap + react-bootstrap for styles and components.
+## Tecnologías
 
-## How to use
-### Prerequisites
-1. Install Node and npm latest versions.
-2. Set up and run the [**House Net backend**](https://github.com/cmssandoval/house-net-backend), which provides the API used by this frontend.
+### Frontend
 
-### Requirements
-1. Download or clone this repository.
+- React + TypeScript
+- Vite
+- React Router
+- Axios
+- Zod
+- Bootstrap y React Bootstrap
+- Vitest y Testing Library
 
-2. Open a terminal in the downloaded folder directory and run the following command to install dependencies:
-    ```
-    npm install
-    ```
+### Backend
 
-3. Create a `.env.local` file following the [**.env.example**](./.env.example) schema and set `VITE_API_BASE_URL` to the URL where the backend API is available. For example:
-    ```
-    VITE_API_BASE_URL=http://localhost:5000
-    ```
+- Node.js y Express
+- Prisma y PostgreSQL
+- Argon2 para contraseñas
+- JSON Web Token
+- Zod
+- Helmet y CORS
+- Jest y Supertest
+- PM2 para la ejecución en producción
 
-4. To start the development server, run:
-    ```
-    npm run dev
-    ```
+## Estructura del proyecto
 
-5. Open the local URL shown in the terminal.
+```text
+frontend/   Aplicación web de React
+backend/    API de Express y esquema de Prisma
+```
 
-6. To create a production build, run:
-    ```
-    npm run build
-    ```
-- This creates the production files in the `dist/` folder. To use the frontend through the backend, include this folder in the backend environment as described in the [**backend README**](https://github.com/cmssandoval/house-net-backend/blob/main/README.md).
+## Requisitos
 
-7. To preview the production build locally, run:
-    ```
-    npm run preview
-    ```
+- Node.js 26 o posterior
+- npm 12 o posterior
+- PostgreSQL
 
-8. To check the code with ESLint, run:
-    ```
-    npm run lint
-    ```
+## Configuración
 
-## Contact
-If you have any comments, suggestions or questions, check my profile:
+### 1. Clonar e instalar
 
-**GitHub: https://github.com/cmssandoval/**
+```powershell
+git clone https://github.com/cmssandoval/house-net.git
+cd house-net
+npm --prefix frontend install
+npm --prefix backend install
+```
+
+### 2. Configurar la base de datos
+
+Crea una base de datos PostgreSQL llamada `housenet`, o usa otro nombre y refléjalo en `DATABASE_URL`.
+
+Luego copia el archivo de ejemplo:
+
+```powershell
+Copy-Item backend\.env.example backend\.env
+```
+
+Configura `backend/.env`:
+
+```dotenv
+NODE_ENV=development
+PORT=3000
+HOST=0.0.0.0
+DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/housenet
+JWT_SECRET=una_clave_aleatoria_de_al_menos_32_caracteres
+```
+
+Puedes generar una clave segura con:
+
+```powershell
+node -e "console.log(require('crypto').randomBytes(128).toString('hex'))"
+```
+
+Aplica las migraciones de Prisma:
+
+```powershell
+npm --prefix backend exec -- prisma migrate deploy
+```
+
+Si no tienes migraciones disponibles, puedes crear la estructura con:
+
+```powershell
+npm --prefix backend exec -- prisma db push
+```
+
+### 3. Configurar el frontend
+
+Copiar el archivo de ejemplo:
+
+```powershell
+Copy-Item frontend\.env.example frontend\.env.development
+```
+
+Durante el desarrollo separado, configura `frontend/.env.development`:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:3000/api/
+```
+
+## Ejecutar en desarrollo
+
+En dos terminales, desde la raíz del repositorio:
+
+```powershell
+npm --prefix backend run dev
+```
+
+```powershell
+npm --prefix frontend run dev
+```
+
+Vite mostrará la URL local del frontend, normalmente `http://localhost:5173`. La API estará disponible en `http://localhost:3000`.
+
+Las solicitudes permitidas desde Vite ya están configuradas en `backend/src/config/allowedOrigins.js`, puedes agregar orígenes permitidos si deseas extender la aplicación.
+
+## Ejecutar como una sola aplicación
+
+También puedes servir el frontend compilado desde Express:
+
+```powershell
+npm --prefix frontend run build
+```
+
+Esto genera `frontend/dist`. Copia el contenido a `backend/dist`:
+
+```powershell
+New-Item backend\dist -ItemType Directory -Force
+Copy-Item frontend\dist\* backend\dist\ -Recurse -Force
+```
+
+Después, configura `NODE_ENV=production` en `backend/.env` y inicia el servidor:
+
+```powershell
+npm --prefix backend run start
+```
+
+El backend estará disponible en `http://localhost:3000`, y servirá la build del frontend en la raíz, y la API en `http://localhost:3000/api`.
+
+## Comandos
+
+### Frontend
+
+```powershell
+npm --prefix frontend run dev
+npm --prefix frontend run build
+npm --prefix frontend run preview
+npm --prefix frontend run lint
+npm --prefix frontend test
+```
+
+### Backend
+
+```powershell
+npm --prefix backend run dev
+npm --prefix backend run start
+npm --prefix backend run stop
+npm --prefix backend test
+npm --prefix backend exec -- prisma migrate deploy
+```
+
+## Ejecución automática con PM2
+
+Para ejecutar el backend automáticamente al iniciar el servidor:
+
+```powershell
+npm install -g pm2
+pm2 --version
+pm2 startup
+cd backend
+npm run start
+pm2 save
+```
+
+El comando generado por `pm2 startup` debe ejecutarse con los permisos adecuados para el sistema operativo.
+
+Comandos útiles:
+
+```powershell
+pm2 status
+pm2 stop backend-house-net
+pm2 restart backend-house-net
+pm2 logs backend-house-net
+```
+
+Si cambias la versión de Node mediante NVM, actualiza el inicio automático:
+
+```powershell
+pm2 unstartup
+pm2 startup
+pm2 save
+```
+
+## Seguridad de red
+
+House Net está diseñado principalmente para una red local (LAN). Antes de exponerlo fuera de esa red:
+
+- Usa contraseñas y claves aleatorias únicas.
+- Mantén PostgreSQL, Node.js y el sistema operativo actualizados.
+- Configura reglas de firewall explícitas.
+- No uses redirección de puertos en el router.
+- Para acceso remoto, considera una solución segura como Tailscale.
+- Usa HTTPS y restringe los orígenes CORS a los dominios reales.
+
+## Próximas funcionalidades
+
+- Calendario compartido y fechas importantes del hogar.
+- Sistema completo de tareas compartidas.
+- Artículos para almacenar información académica o de investigación.
+- Publicaciones para compartir información interna familiar.
+- Herramientas digitales privadas que eviten depender de servicios externos.
+
+## Contacto
+
+Si deseas contactarme, envíame un mensaje:
+
+- **Email: <a href='mailto:carlossan.16.mc@gmail.com'>Enviar un email</a>**
+- **GitHub: https://github.com/cmssandoval/**
